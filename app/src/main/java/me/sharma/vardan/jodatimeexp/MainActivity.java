@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
 //		getTimeslotInLast24Hours();
 //		getWeekDatesInLast30Days();
 //		getWeekDatesInLast30Days();
-		test();
+		test2();
 	}
 
 
@@ -167,35 +167,15 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	public void test1() {
-
 		List<Test> tests = new ArrayList<>(12);
 		Calendar calendar = getInstance();
-		int y = calendar.get(Calendar.YEAR);
 		Timber.d(calendar.toString());
-		Set<Integer> weeks = new HashSet<>(6);
 		for (int i = 0; i < 4; i++) {
-			calendar.add(Calendar.WEEK_OF_YEAR, -1);
-//			Timber.d(String.valueOf(calendar.get(Calendar.DAY_OF_YEAR)));
-//			Timber.d(String.valueOf(calendar.get(Calendar.WEEK_OF_YEAR)));
-			weeks.add(calendar.get(Calendar.WEEK_OF_YEAR));
-		}
-
-		for (Integer week : weeks) {
-//			Timber.d(valueOf(calendar.get(Calendar.DAY_OF_WEEK)));
-			calendar.clear();
-			calendar.set(Calendar.WEEK_OF_YEAR, week);
-			calendar.set(Calendar.YEAR, y);
-			calendar.set(Calendar.DAY_OF_WEEK, MONDAY);
-//			Timber.d(valueOf(calendar.get(Calendar.DAY_OF_WEEK)));
-			Timber.d(valueOf(calendar.get(Calendar.DAY_OF_MONTH)));
-//		}
-		}
-
-		for (int i = 0; i < 12; i++) {
 			long end = calendar.getTimeInMillis();
-			calendar.add(MONTH, -1);
+			calendar.add(Calendar.WEEK_OF_YEAR, -1);
+			calendar.set(DAY_OF_WEEK, MONDAY);
 			long start = calendar.getTimeInMillis();
-			Test test = new Test(start, end, months[calendar.get(MONTH)]);
+			final Test test = new Test(start, end, calendar.get(DATE) + " " + months[calendar.get(MONTH)]);
 			tests.add(test);
 		}
 		List<Point> points = PointConvert.getFakePoints();
@@ -210,4 +190,31 @@ public class MainActivity extends AppCompatActivity {
 			Timber.d(test.toString());
 		}
 	}
+
+	public void test2() {
+		List<Test> tests = new ArrayList<>(7);
+		Calendar calendar = getInstance();
+		Timber.d(months[calendar.get(MONTH)]);
+//		Timber.d(calendar.toString());
+		for (int i = 0; i < 7; i++) {
+			long end = calendar.getTimeInMillis();
+			calendar.add(Calendar.DAY_OF_YEAR, -1);
+			long start = calendar.getTimeInMillis();
+			final Test test = new Test(start, end, calendar.get(DATE) + " " + months[calendar.get(MONTH)]);
+			tests.add(test);
+		}
+		List<Point> points = PointConvert.getFakePoints();
+		for (Point point : points) {
+			for (Test test : tests) {
+				if (test.isInRange(point.getTimestamp() * 1000)) {
+					test.addValue(point.getValue());
+				}
+			}
+		}
+		for (Test test : tests) {
+			Timber.d(test.toString());
+		}
+	}
+
+
 }
