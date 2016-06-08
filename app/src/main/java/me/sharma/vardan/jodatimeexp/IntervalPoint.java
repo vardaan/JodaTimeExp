@@ -3,14 +3,14 @@ package me.sharma.vardan.jodatimeexp;
 /**
  * Created by vardaan sharma on 26/5/16.
  */
-public class Test {
+public class IntervalPoint {
 	private final Range range;
-	private double accumaltor;
+	private double accumulator;
 	private int frequency;
 	private String label;
 	private double avg;
 
-	public Test(long start, long end, String label) {
+	public IntervalPoint(long start, long end, String label) {
 		this.label = label;
 		this.range = new Range(start, end);
 	}
@@ -20,23 +20,23 @@ public class Test {
 	}
 
 	public void addValue(double value) {
-		accumaltor += value;
+		accumulator += value;
 		frequency++;
 		avg = getAvg();
 	}
 
 	public double getAvg() {
-		if (accumaltor == 0 || frequency == 0) {
+		if (accumulator == 0 || frequency == 0) {
 			return 0;
 		}
-		return accumaltor / frequency;
+		return accumulator / frequency;
 	}
 
 	@Override
 	public String toString() {
 		return "Test{" +
 				"range=" + range +
-				", accumaltor=" + accumaltor +
+				", accumulator=" + accumulator +
 				", frequency=" + frequency +
 				", label='" + label + '\'' +
 				", avg=" + avg +
@@ -60,6 +60,4 @@ public class Test {
 					'}';
 		}
 	}
-
-
 }

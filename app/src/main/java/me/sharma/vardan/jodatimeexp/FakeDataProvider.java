@@ -12,14 +12,13 @@ import timber.log.Timber;
  * Created by vardaan sharma on 25/5/16.
  */
 //todo better name
-public class PointConvert {
+public class FakeDataProvider {
 	private static
 	final String[] labelsX3 =
 			{"Jan", "Feb", "Mar", "Apr", "Jun", "May", "Jul", "Aug", "Sep", "oct", "nov", "dec"};
 
 	public static LineSet getPoints() {
 		List<Point> points = getFakePoints();
-
 
 		Timber.d("Generating points");
 		for (int i = 0; i < points.size(); i++) {

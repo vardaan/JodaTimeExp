@@ -26,6 +26,15 @@ public class MainActivity extends AppCompatActivity {
 
 	final String[] days =
 			{"Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"};
+	final String[] weeks =
+			{"Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6"};
+	final String[] hours =
+			{"12:00 am", "6:00 am", "12:00 pm", "6:00pm"};
+
+
+	enum Type {
+		YEARLY, MONTHLY, WEEKLY, DAILY
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -144,77 +153,129 @@ public class MainActivity extends AppCompatActivity {
 //				calendar.set();
 //			}
 //		}
-		List<Test> tests = new ArrayList<>(12);
+		List<IntervalPoint> intervalPoints = new ArrayList<>(12);
 		Calendar calendar = getInstance();
-		for (int i = 0; i < 12; i++) {
-			long end = calendar.getTimeInMillis();
-			calendar.add(MONTH, -1);
-			long start = calendar.getTimeInMillis();
-			Test test = new Test(start, end, months[calendar.get(MONTH)]);
-			tests.add(test);
-		}
-		List<Point> points = PointConvert.getFakePoints();
-		for (Point point : points) {
-			for (Test test : tests) {
-				if (test.isInRange(point.getTimestamp() * 1000)) {
-					test.addValue(point.getValue());
-				}
-			}
-		}
-		for (Test test : tests) {
-			Timber.d(test.toString());
-		}
+		getYearIntervalPoints(intervalPoints, calendar);
+		List<Point> points = FakeDataProvider.getFakePoints();
+		populatePoints(intervalPoints, points);
+		printPoints(intervalPoints);
 	}
+
 
 	public void test1() {
-		List<Test> tests = new ArrayList<>(12);
-		Calendar calendar = getInstance();
-		Timber.d(calendar.toString());
-		for (int i = 0; i < 4; i++) {
-			long end = calendar.getTimeInMillis();
-			calendar.add(Calendar.WEEK_OF_YEAR, -1);
-			calendar.set(DAY_OF_WEEK, MONDAY);
-			long start = calendar.getTimeInMillis();
-			final Test test = new Test(start, end, calendar.get(DATE) + " " + months[calendar.get(MONTH)]);
-			tests.add(test);
-		}
-		List<Point> points = PointConvert.getFakePoints();
-		for (Point point : points) {
-			for (Test test : tests) {
-				if (test.isInRange(point.getTimestamp() * 1000)) {
-					test.addValue(point.getValue());
-				}
-			}
-		}
-		for (Test test : tests) {
-			Timber.d(test.toString());
-		}
+		List<Point> points = FakeDataProvider.getFakePoints();
+		List<IntervalPoint> intervalPoints = getMonthIntervalPoints();
+		populatePoints(intervalPoints, points);
 	}
 
+
 	public void test2() {
-		List<Test> tests = new ArrayList<>(7);
+		List<IntervalPoint> intervalPoints = new ArrayList<>(7);
 		Calendar calendar = getInstance();
 		Timber.d(months[calendar.get(MONTH)]);
 //		Timber.d(calendar.toString());
-		for (int i = 0; i < 7; i++) {
+		getWeekIntervalPoint(intervalPoints, calendar);
+		List<Point> points = FakeDataProvider.getFakePoints();
+		populatePoints(intervalPoints, points);
+		printPoints(intervalPoints);
+	}
+
+	private void getWeekIntervalPoint(List<IntervalPoint> intervalPoints, Calendar calendar) {
+		for (int i = 0; i < getLength(Type.WEEKLY); i++) {
 			long end = calendar.getTimeInMillis();
-			calendar.add(Calendar.DAY_OF_YEAR, -1);
+			subtract(calendar, Type.WEEKLY);
 			long start = calendar.getTimeInMillis();
-			final Test test = new Test(start, end, calendar.get(DATE) + " " + months[calendar.get(MONTH)]);
-			tests.add(test);
-		}
-		List<Point> points = PointConvert.getFakePoints();
-		for (Point point : points) {
-			for (Test test : tests) {
-				if (test.isInRange(point.getTimestamp() * 1000)) {
-					test.addValue(point.getValue());
-				}
-			}
-		}
-		for (Test test : tests) {
-			Timber.d(test.toString());
+			final IntervalPoint intervalPoint = new IntervalPoint(start, end, calendar.get(DATE) + " " + months[calendar.get(MONTH)]);
+			intervalPoints.add(intervalPoint);
 		}
 	}
 
+	private List<IntervalPoint> getIntervalPoints(Type type) {
+		List<IntervalPoint> intervalPoints = new ArrayList<>();
+		Calendar calendar = Calendar.getInstance();
+		for (int i = 0; i < getLength(type); i++) {
+			long end = calendar.getTimeInMillis();
+			subtract(calendar, type);
+			long start = calendar.getTimeInMillis();
+			final IntervalPoint intervalPoint = new IntervalPoint(start, end, calendar.get(DATE) + " " + months[calendar.get(MONTH)]);
+			intervalPoints.add(intervalPoint);
+		}
+		return intervalPoints;
+	}
 
+
+	private void getYearIntervalPoints(List<IntervalPoint> intervalPoints, Calendar calendar) {
+		for (int i = 0; i < getLength(Type.YEARLY); i++) {
+			long end = calendar.getTimeInMillis();
+			subtract(calendar, Type.YEARLY);
+			long start = calendar.getTimeInMillis();
+			IntervalPoint intervalPoint = new IntervalPoint(start, end, months[calendar.get(MONTH)]);
+			intervalPoints.add(intervalPoint);
+		}
+	}
+
+	private List<IntervalPoint> getMonthIntervalPoints() {
+		Calendar calendar = Calendar.getInstance();
+		List<IntervalPoint> intervalPoints = new ArrayList<>();
+		for (int i = 0; i < getLength(Type.MONTHLY); i++) {
+			long end = calendar.getTimeInMillis();
+			subtract(calendar, Type.MONTHLY);
+			long start = calendar.getTimeInMillis();
+			final IntervalPoint intervalPoint = new IntervalPoint(start, end, calendar.get(DATE) + " " + months[calendar.get(MONTH)]);
+			intervalPoints.add(intervalPoint);
+		}
+		return intervalPoints;
+	}
+
+
+	private void populatePoints(List<IntervalPoint> intervalPoints, List<Point> points) {
+		for (Point point : points) {
+			for (IntervalPoint intervalPoint : intervalPoints) {
+				if (intervalPoint.isInRange(point.getTimestamp() * 1000)) {
+					intervalPoint.addValue(point.getValue());
+				}
+			}
+		}
+	}
+
+	private void printPoints(List<IntervalPoint> intervalPoints) {
+		for (IntervalPoint intervalPoint : intervalPoints) {
+			Timber.d(intervalPoint.toString());
+		}
+	}
+
+	private int getLength(Type type) {
+		int n = 0;
+		switch (type) {
+			case YEARLY:
+				n = 12;
+				break;
+			case MONTHLY:
+				n = 4;
+				break;
+			case WEEKLY:
+				n = 7;
+				break;
+			case DAILY:
+				throw new IllegalStateException("Not yet implement");
+		}
+		return n;
+	}
+
+	private void subtract(Calendar calendar, Type type) {
+		switch (type) {
+			case YEARLY:
+				calendar.add(MONTH, -1);
+				break;
+			case MONTHLY:
+				calendar.add(Calendar.WEEK_OF_YEAR, -1);
+				calendar.set(DAY_OF_WEEK, MONDAY);
+				break;
+			case WEEKLY:
+				calendar.add(Calendar.DAY_OF_YEAR, -1);
+				break;
+			case DAILY:
+				throw new IllegalStateException("Not yet implement");
+		}
+	}
 }
